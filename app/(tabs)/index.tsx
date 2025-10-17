@@ -1,13 +1,34 @@
 import { Image } from 'expo-image';
+import { useEffect, useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Api } from '@/lib/api';
+import type { Change } from '@/lib/types';
 import { Link } from 'expo-router';
 
 export default function HomeScreen() {
+  const [changes, setChanges] = useState<Change[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await Api.listChanges({});
+        if (mounted) setChanges(data);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -37,32 +58,25 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+        <ThemedText type="subtitle">Home</ThemedText>
+        {loading ? (
+          <ThemedText>Loading changes…</ThemedText>
+        ) : changes.length === 0 ? (
+          <ThemedText>No changes yet.</ThemedText>
+        ) : (
+          changes.map((c) => (
+            <ThemedView key={c.id} style={{ gap: 4 }}>
+              <Link href={`/change/${c.id}`}>
+                <Link.Trigger>
+                  <ThemedText type="defaultSemiBold">{c.title}</ThemedText>
+                </Link.Trigger>
+                <Link.Preview />
+              </Link>
+              <ThemedText numberOfLines={2}>{c.description}</ThemedText>
+              <ThemedText type="muted">{c.address ?? `${c.lat.toFixed(3)}, ${c.lon.toFixed(3)}`}</ThemedText>
+            </ThemedView>
+          ))
+        )}
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>

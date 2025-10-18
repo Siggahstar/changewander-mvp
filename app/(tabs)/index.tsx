@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useWallet } from "../contexts/WalletContext";

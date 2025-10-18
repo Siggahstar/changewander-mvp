@@ -6,8 +6,10 @@ import {
   ScrollView,
   ActivityIndicator,
   FlatList,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import QRCode from "react-native-qrcode-svg";
 
 type Stop = {
   id: string;
@@ -23,6 +25,8 @@ export default function TransportScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const MAX_VISIBLE = 50;
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [ticketPayload, setTicketPayload] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch nearby public transport stops using Overpass API centered on Lisbon
@@ -70,10 +74,11 @@ export default function TransportScreen() {
   }, []);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: "#fff" }}
-      contentContainerStyle={{ padding: 20 }}
-    >
+    <>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#fff" }}
+        contentContainerStyle={{ padding: 20 }}
+      >
       {/* Header */}
       <View
         style={{
@@ -125,6 +130,16 @@ export default function TransportScreen() {
           Valid until 10:00 AM Tomorrow
         </Text>
         <TouchableOpacity
+          onPress={() => {
+            // generate a simple ticket payload and show QR modal
+            const ticket = {
+              id: `pass_${Date.now()}`,
+              type: "24h-unlimited",
+              validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            };
+            setTicketPayload(JSON.stringify(ticket));
+            setShowQrModal(true);
+          }}
           style={{
             backgroundColor: "#009688",
             borderRadius: 8,
@@ -213,5 +228,62 @@ export default function TransportScreen() {
         <Text style={{ color: "#fff", fontWeight: "600" }}>Plan New Trip</Text>
       </TouchableOpacity>
     </ScrollView>
+      <Modal
+        visible={showQrModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowQrModal(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 12,
+              padding: 20,
+              width: "100%",
+              maxWidth: 420,
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+              Your QR Ticket
+            </Text>
+            {ticketPayload ? (
+              <View style={{ alignItems: "center" }}>
+                <QRCode value={ticketPayload} size={200} />
+                <Text style={{ marginTop: 12, color: "#666", fontSize: 12 }}>
+                  Tap close when ready. Ticket ID: {JSON.parse(ticketPayload).id}
+                </Text>
+              </View>
+            ) : (
+              <Text>Preparing ticket…</Text>
+            )}
+
+            <TouchableOpacity
+              onPress={() => setShowQrModal(false)}
+              style={{
+                marginTop: 18,
+                backgroundColor: "#009688",
+                paddingVertical: 10,
+                paddingHorizontal: 18,
+                borderRadius: 8,
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
+
+// QR Ticket modal rendered inside the same file

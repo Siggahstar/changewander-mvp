@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert, FlatList, TextInput, Modal, Platform } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, FlatList, TextInput, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useWallet } from "../contexts/WalletContext";
 import { BarCodeScanner } from 'expo-barcode-scanner';
@@ -44,18 +44,7 @@ export default function WalletScreen() {
     }
   };
 
-  const handleQuickPay = async (method: "qr" | "nfc") => {
-    const amount = 5.5; // demo; when scanning we'll use scanned amount if available
-    setProcessingPay(true);
-    try {
-      await quickPay(amount, method, "Demo Merchant");
-      Alert.alert("Payment sent", `-€${amount.toFixed(2)} via ${method.toUpperCase()}`);
-    } catch (e: any) {
-      Alert.alert("Payment failed", e.message || "Error during payment");
-    } finally {
-      setProcessingPay(false);
-    }
-  };
+  // handleQuickPay is no longer used because QR/NFC flows are handled via modals/scanner
 
   // Request permissions for barcode scanner when QR modal is opened
   useEffect(() => {

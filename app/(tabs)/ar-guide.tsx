@@ -1,19 +1,29 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
   ActivityIndicator,
   FlatList,
   StyleSheet,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 // Note: this screen uses expo-camera. If you don't have it installed run:
 // expo install expo-camera
 import { Camera } from "expo-camera";
+
+// Workaround for TypeScript JSX typing issues with the Camera export.
+// Create a thin wrapper functional component so TS sees a proper component type.
+const CameraView: React.FC<any> = (props) => {
+  // cast to any to avoid TS complaining about the module shape
+  return React.createElement((Camera as unknown) as any, props);
+};
 
 type POI = {
   id: string;
@@ -29,29 +39,59 @@ export default function ARGuideScreen() {
   const [loadingPOI, setLoadingPOI] = useState(false);
   const [pois, setPois] = useState<POI[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const cameraRef = useRef<Camera | null>(null);
+  const [showAllPois, setShowAllPois] = useState(false);
+  const INITIAL_VISIBLE = 5;
+  const MAX_VISIBLE_POIS = 10;
+  // avoid strict Camera typing to keep TS happy when forwarding ref
+  const cameraRef = useRef<any>(null);
+  const [selectedPoi, setSelectedPoi] = useState<POI | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        setHasPermission(status === "granted");
-      } catch (e: any) {
-        setHasPermission(false);
-      }
-    })();
+    // enable LayoutAnimation on Android
+    if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+      // @ts-ignore
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
   }, []);
+
+  // Do NOT request camera permission automatically on mount.
+  // Permission will be requested only when the user explicitly opens the camera.
+  const requestCameraPermission = async () => {
+    try {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+    } catch {
+      setHasPermission(false);
+    }
+  };
 
   const fetchNearbyPOI = async () => {
     setLoadingPOI(true);
     setError(null);
     try {
-      // Use Overpass to search for tourism/cultural POIs around central Lisbon
+      // Try to get user's current location; fall back to central Lisbon
+      const getUserLocation = (): Promise<{ lat: number; lon: number }> =>
+        new Promise((resolve) => {
+          try {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+              () => resolve({ lat: 38.7223, lon: -9.1393 }),
+              { timeout: 5000 }
+            );
+          } catch {
+            resolve({ lat: 38.7223, lon: -9.1393 });
+          }
+        });
+
+      const center = await getUserLocation();
+      const radius = 3000;
+
+      // Use Overpass to search for tourism/cultural POIs near the center point
       const query = `[
         out:json][timeout:25];
         (
-          node["tourism"~"museum|attraction|artwork"](around:3000,38.7223,-9.1393);
-          node["historic"](around:3000,38.7223,-9.1393);
+          node["tourism"~"museum|attraction|artwork"](around:${radius},${center.lat},${center.lon});
+          node["historic"](around:${radius},${center.lat},${center.lon});
         );
         out body;`;
 
@@ -116,8 +156,10 @@ export default function ARGuideScreen() {
       <View style={{ borderRadius: 12, overflow: "hidden", marginBottom: 12 }}>
         {hasPermission === null && (
           <View style={{ height: 220, justifyContent: "center", alignItems: "center" }}>
-            <ActivityIndicator color="#009688" />
-            <Text style={{ marginTop: 8 }}>Requesting camera permission...</Text>
+            <Text style={{ marginBottom: 12 }}>Camera is disabled for this page.</Text>
+            <TouchableOpacity onPress={requestCameraPermission} style={{ backgroundColor: '#009688', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
+              <Text style={{ color: '#fff', fontWeight: '600' }}>Open Camera</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -125,14 +167,17 @@ export default function ARGuideScreen() {
           <View style={{ height: 220, justifyContent: "center", alignItems: "center", padding: 16 }}>
             <Text style={{ color: "#333", textAlign: "center" }}>
               Camera permission denied. To enable AR features, grant camera access in
-              your device settings.
+              your device settings or tap Open Camera to retry.
             </Text>
+            <TouchableOpacity onPress={requestCameraPermission} style={{ marginTop: 12, backgroundColor: '#009688', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 }}>
+              <Text style={{ color: '#fff', fontWeight: '600' }}>Open Camera</Text>
+            </TouchableOpacity>
           </View>
         )}
 
         {hasPermission === true && (
           <View style={{ height: 300, backgroundColor: "#000" }}>
-            <Camera ref={cameraRef} style={{ flex: 1 }} type={Camera.Constants.Type.back} />
+            <CameraView ref={cameraRef} style={{ flex: 1 }} type={'back'} />
 
             {/* Simple overlay */}
             <View pointerEvents="none" style={styles.overlay}>
@@ -156,7 +201,7 @@ export default function ARGuideScreen() {
         <View>
           <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 8 }}>Nearby Places</Text>
           <FlatList
-            data={pois}
+            data={showAllPois ? pois.slice(0, MAX_VISIBLE_POIS) : pois.slice(0, INITIAL_VISIBLE)}
             keyExtractor={(it) => it.id}
             renderItem={({ item }) => (
               <View style={{ backgroundColor: "#f5f5f5", borderRadius: 10, padding: 12, marginBottom: 8 }}>
@@ -165,14 +210,47 @@ export default function ARGuideScreen() {
                 {item.lat && item.lon ? (
                   <Text style={{ color: "#666", fontSize: 12, marginTop: 6 }}>{item.lat.toFixed(4)}, {item.lon.toFixed(4)}</Text>
                 ) : null}
-                <TouchableOpacity style={{ marginTop: 8, backgroundColor: "#009688", padding: 8, borderRadius: 8, alignItems: "center" }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    // animate the modal open
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setSelectedPoi(item);
+                  }}
+                  style={{ marginTop: 8, backgroundColor: "#009688", padding: 8, borderRadius: 8, alignItems: "center" }}
+                >
                   <Text style={{ color: "#fff", fontWeight: "600" }}>View AR Details</Text>
                 </TouchableOpacity>
               </View>
             )}
           />
+
+          {pois.length > INITIAL_VISIBLE && (
+            <TouchableOpacity
+              onPress={() => setShowAllPois((s) => !s)}
+              style={{ marginTop: 6, alignItems: 'center' }}
+            >
+              <Text style={{ color: '#009688', fontWeight: '600' }}>{showAllPois ? 'Show Less' : `View More (${Math.min(pois.length, MAX_VISIBLE_POIS) - INITIAL_VISIBLE} more)`}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
+
+      {/* POI detail modal */}
+      <Modal visible={!!selectedPoi} animationType="slide" transparent>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ width: '90%', maxWidth: 520, backgroundColor: '#fff', borderRadius: 12, padding: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#009688', marginBottom: 8 }}>{selectedPoi?.title}</Text>
+            {selectedPoi?.desc ? <Text style={{ color: '#444', marginBottom: 8 }}>{selectedPoi?.desc}</Text> : null}
+            {selectedPoi?.lat && selectedPoi?.lon ? <Text style={{ color: '#666', fontSize: 12 }}>Coordinates: {selectedPoi.lat.toFixed(4)}, {selectedPoi.lon.toFixed(4)}</Text> : null}
+
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
+              <TouchableOpacity onPress={() => setSelectedPoi(null)} style={{ padding: 8 }}>
+                <Text style={{ color: '#009688', fontWeight: '600' }}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* CTA */}
       <TouchableOpacity

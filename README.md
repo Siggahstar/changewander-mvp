@@ -1,50 +1,82 @@
-# Welcome to your Expo app 👋
+# 🌍 ChangeWander — Wander Without Worry, Change Handled
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### 🚀 Version: v0.2.0 — Teal Revamp & Page Redesign (October 2025)
 
-## Get started
+ChangeWander is a **cashless travel companion** for Portugal’s 29–33 million annual tourists and 50,000+ local vendors.  
+Our MVP simplifies payments, AR exploration, and eco-donations — all through a no-NIF wallet.
 
-1. Install dependencies
+Built with **Expo SDK 54**, **React Native**, and a sleek **teal UI**, ChangeWander empowers visitors to travel, pay, and explore without friction.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 🧭 **Current Build Overview (v0.2.0)**
 
-   ```bash
-   npx expo start
-   ```
+### ✨ **Screens**
+| Screen | Description | Status |
+|:-------|:-------------|:--------|
+| 🏠 **Home** | Entry screen with hero image, quick links, and featured vendors. | ✅ Stable |
+| 💳 **Wallet** | Displays balance, top-up button, and transaction list. | ✅ Revamped |
+| 🚌 **Transport** | Shows QR ticket placeholder, active passes, and upcoming routes. | ✅ Revamped |
+| 🏛️ **AR Guide** | Explorable cultural landmarks with “View in AR” CTA. | ✅ New |
+| 🧭 **Navigation** | Minimal bottom tab bar with teal theme and icons. | ✅ Polished |
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🎨 **Design Highlights**
+- Teal-accented minimal layout (inline React Native styles).
+- Cross-platform tested on Expo Go (iOS, Android, Web).
+- Material and Ionicons used for crisp UI icons.
+- No Tailwind or Babel overhead — smooth and portable setup.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## ⚙️ **Tech Stack**
+| Layer | Framework / Tool | Purpose |
+|:------|:-----------------|:---------|
+| UI / UX | React Native (Expo SDK 54) | Cross-platform mobile/web app |
+| Routing | Expo Router | Tab navigation and page transitions |
+| Icons | Ionicons, MaterialCommunityIcons | Navigation icons |
+| Styling | Inline React Native Styles | Lightweight, Babel-free setup |
+| Future | Supabase / Stripe / ARKit | Payments, auth, AR integration |
 
-When you're ready, run:
+---
+
+## 🧩 **Folder Structure**
+
+
+app/
+├─ (tabs)/
+│ ├─ index.tsx → Home screen
+│ ├─ wallet.tsx → Wallet screen
+│ ├─ transport.tsx → Transport screen
+│ ├─ ar-guide.tsx → AR Guide screen
+│ └─ _layout.tsx → Bottom navigation layout
+├─ assets/ → App icons & images
+metro.config.js
+package.json
+CHANGELOG.md
+
+
+
+---
+
+## 🧪 **Testing**
+**Verified on:**
+- ✅ Expo Go (Android, iOS)
+- ✅ Expo Web (`expo start --web`)
+- ✅ Clean bundling, no Babel or Tailwind conflicts
+
+---
+
+## 🧱 **Installation**
 
 ```bash
-npm run reset-project
-```
+# 1️⃣ Clone the repo
+git clone https://github.com/Siggahstar/changewander-mvp.git
+cd changewander-mvp
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+# 2️⃣ Install dependencies
+npm install
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# 3️⃣ Start the project
+npx expo start

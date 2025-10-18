@@ -99,11 +99,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // If API indicates failure, fallback to simulated error
       throw new Error(body?.message || 'Payment provider rejected the transaction');
     } catch (err) {
-      // fallback behavior: gracefully simulate the payment locally so the app remains functional.
-      // Log the error to console and then perform the simulated payment.
-      // In production you should handle/report errors instead of silently falling back.
-      // eslint-disable-next-line no-console
-      console.warn('quickPay API failed, falling back to simulated payment:', err);
+  // fallback behavior: gracefully simulate the payment locally so the app remains functional.
+  // Log the error to console and then perform the simulated payment.
+  // In production you should handle/report errors instead of silently falling back.
+  console.warn('quickPay API failed, falling back to simulated payment:', err);
 
       // perform simulated payment (same as previous behavior)
       await new Promise((r) => setTimeout(r, 700));

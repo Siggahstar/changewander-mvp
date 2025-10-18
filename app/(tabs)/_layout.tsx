@@ -34,7 +34,7 @@ export default function Layout() {
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "home" : "home-outline"}
+              name={focused ? ("home" as any) : ("home-outline" as any)}
               size={22}
               color={color}
             />
@@ -49,7 +49,7 @@ export default function Layout() {
           title: "Wallet",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "wallet" : "wallet-outline"}
+              name={focused ? ("wallet" as any) : ("wallet-outline" as any)}
               size={22}
               color={color}
             />
@@ -64,7 +64,7 @@ export default function Layout() {
           title: "Transport",
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
-              name={focused ? "bus" : "bus-outline"}
+              name={focused ? ("bus" as any) : ("bus-outline" as any)}
               size={22}
               color={color}
             />
@@ -79,7 +79,22 @@ export default function Layout() {
           title: "AR Guide",
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
-              name={focused ? "cube" : "cube-outline"}
+              name={focused ? ("cube" as any) : ("cube-outline" as any)}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* 🔍 Explore - last item */}
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: "Explore",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? ("compass" as any) : ("compass-outline" as any)}
               size={22}
               color={color}
             />

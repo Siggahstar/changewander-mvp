@@ -6,7 +6,6 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY as string;
 if (!supabaseUrl || !supabaseAnonKey) {
   // Keep a runtime guard so developers get a clear error locally
   // In Expo this should be provided via app.json or environment.
-  // eslint-disable-next-line no-console
   console.warn('Supabase env vars are not set: EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY');
 }
 

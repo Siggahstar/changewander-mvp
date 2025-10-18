@@ -1,46 +1,89 @@
-import { Tabs } from 'expo-router';
+import React from "react";
+import { Tabs } from "expo-router";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function Layout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: "#009688", // Teal accent
+        tabBarInactiveTintColor: "#999",
+        tabBarStyle: {
+          backgroundColor: "#fff",
+          borderTopWidth: 0.5,
+          borderTopColor: "#e0e0e0",
+          height: 60,
+          elevation: 6,
+          shadowColor: "#000",
+          shadowOpacity: 0.08,
+          shadowOffset: { width: 0, height: -2 },
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 4,
+          fontWeight: "500",
+        },
+      }}
+    >
+      {/* 🏠 Home */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
+              size={22}
+              color={color}
+            />
+          ),
         }}
       />
+
+      {/* 💳 Wallet */}
       <Tabs.Screen
-        name="explore"
+        name="wallet"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Wallet",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "wallet" : "wallet-outline"}
+              size={22}
+              color={color}
+            />
+          ),
         }}
       />
+
+      {/* 🚌 Transport */}
       <Tabs.Screen
-        name="add"
+        name="transport"
         options={{
-          title: 'Add',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.app.fill" color={color} />,
+          title: "Transport",
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "bus" : "bus-outline"}
+              size={22}
+              color={color}
+            />
+          ),
         }}
       />
+
+      {/* 🏛️ AR Guide */}
       <Tabs.Screen
-        name="profile"
+        name="ar-guide"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.crop.circle.fill" color={color} />,
+          title: "AR Guide",
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "cube" : "cube-outline"}
+              size={22}
+              color={color}
+            />
+          ),
         }}
       />
     </Tabs>

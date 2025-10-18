@@ -1,112 +1,161 @@
-import { Image } from 'expo-image';
-import { useEffect, useState } from 'react';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Api } from '@/lib/api';
-import type { Change } from '@/lib/types';
-import { Link } from 'expo-router';
+import React from "react";
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function HomeScreen() {
-  const [changes, setChanges] = useState<Change[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const data = await Api.listChanges({});
-        if (mounted) setChanges(data);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Home</ThemedText>
-        {loading ? (
-          <ThemedText>Loading changes…</ThemedText>
-        ) : changes.length === 0 ? (
-          <ThemedText>No changes yet.</ThemedText>
-        ) : (
-          changes.map((c) => (
-            <ThemedView key={c.id} style={{ gap: 4 }}>
-              <Link href={`/change/${c.id}`}>
-                <Link.Trigger>
-                  <ThemedText type="defaultSemiBold">{c.title}</ThemedText>
-                </Link.Trigger>
-                <Link.Preview />
-              </Link>
-              <ThemedText numberOfLines={2}>{c.description}</ThemedText>
-              <ThemedText type="muted">{c.address ?? `${c.lat.toFixed(3)}, ${c.lon.toFixed(3)}`}</ThemedText>
-            </ThemedView>
-          ))
-        )}
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#fff" }}
+      contentContainerStyle={{ padding: 20 }}
+    >
+      {/* Header */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 25,
+        }}
+      >
+        <View>
+          <Text style={{ fontSize: 22, fontWeight: "600", color: "#009688" }}>
+            Portugal Guide
+          </Text>
+          <Text style={{ fontSize: 14, color: "#444" }}>Welcome, Santos 👋</Text>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 16 }}>
+          <Ionicons name="notifications-outline" size={24} color="#009688" />
+          <Ionicons name="person-circle-outline" size={30} color="#009688" />
+        </View>
+      </View>
+
+      {/* Greeting Card */}
+      <View
+        style={{
+          backgroundColor: "#009688",
+          borderRadius: 18,
+          padding: 20,
+          marginBottom: 20,
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "500" }}>
+          Good Morning, Santos ☀️
+        </Text>
+        <Text style={{ color: "#fff", fontSize: 14, marginTop: 4 }}>
+          Explore Portugal with confidence
+        </Text>
+        <View
+          style={{ flexDirection: "row", alignItems: "center", marginTop: 10 }}
+        >
+          <Ionicons name="location-outline" size={16} color="#fff" />
+          <Text style={{ color: "#fff", marginLeft: 6 }}>Lisboa, Portugal</Text>
+        </View>
+      </View>
+
+      {/* Feature Cards */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          rowGap: 10,
+          columnGap: 10,
+          marginBottom: 20,
+        }}
+      >
+        <TouchableOpacity
+          style={{
+            flexBasis: "47%",
+            backgroundColor: "#e0f2f1",
+            borderRadius: 12,
+            padding: 15,
+          }}
+        >
+          <Ionicons name="card-outline" size={26} color="#009688" />
+          <Text style={{ color: "#009688", fontSize: 16, fontWeight: "600" }}>
+            Digital Wallet
+          </Text>
+          <Text style={{ color: "#444", fontSize: 12 }}>€693.09 available</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            flexBasis: "47%",
+            backgroundColor: "#e0f2f1",
+            borderRadius: 12,
+            padding: 15,
+          }}
+        >
+          <Ionicons name="bus-outline" size={26} color="#009688" />
+          <Text style={{ color: "#009688", fontSize: 16, fontWeight: "600" }}>
+            Transport
+          </Text>
+          <Text style={{ color: "#444", fontSize: 12 }}>
+            Real-time schedules
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            flexBasis: "47%",
+            backgroundColor: "#e0f2f1",
+            borderRadius: 12,
+            padding: 15,
+          }}
+        >
+          <Ionicons name="cube-outline" size={26} color="#009688" />
+          <Text style={{ color: "#009688", fontSize: 16, fontWeight: "600" }}>
+            AR Cultural Guide
+          </Text>
+          <Text style={{ color: "#444", fontSize: 12 }}>Discover heritage</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Recent Activity */}
+      <View>
+        <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
+          Recent Activity
+        </Text>
+
+        <View
+          style={{
+            backgroundColor: "#f5f5f5",
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 8,
+          }}
+        >
+          <Text style={{ color: "#333" }}>Lisbon Café Payment</Text>
+          <Text style={{ color: "red", marginTop: 2 }}>-€4.50</Text>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: "#f5f5f5",
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 8,
+          }}
+        >
+          <Text style={{ color: "#333" }}>Porto Tour Ticket</Text>
+          <Text style={{ color: "red", marginTop: 2 }}>-€18.00</Text>
+        </View>
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#009688",
+            borderRadius: 10,
+            paddingVertical: 12,
+            alignItems: "center",
+            marginTop: 10,
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "600" }}>
+            View All Transactions
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

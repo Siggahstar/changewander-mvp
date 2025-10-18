@@ -1,8 +1,74 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  FlatList,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+type Stop = {
+  id: string;
+  name?: string;
+  lat: number;
+  lon: number;
+  tags?: Record<string, string>;
+};
+
 export default function TransportScreen() {
+  const [stops, setStops] = useState<Stop[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const MAX_VISIBLE = 50;
+
+  useEffect(() => {
+    // Fetch nearby public transport stops using Overpass API centered on Lisbon
+    const fetchStops = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Center at Lisboa: 38.7223, -9.1393, radius 2000 meters
+        const query = `[
+          out:json][timeout:25];
+          (
+            node[public_transport](around:2000,38.7223,-9.1393);
+            node[highway=bus_stop](around:2000,38.7223,-9.1393);
+            node[railway=tram_stop](around:2000,38.7223,-9.1393);
+          );
+          out body;`;
+
+        const url = "https://overpass-api.de/api/interpreter";
+        const resp = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `data=${encodeURIComponent(query)}`,
+        });
+
+        if (!resp.ok) throw new Error(`API ${resp.status}`);
+        const data = await resp.json();
+
+        const parsed: Stop[] = (data.elements || []).map((el: any) => ({
+          id: `${el.type}/${el.id}`,
+          name: el.tags?.name || el.tags?.ref || "Unnamed stop",
+          lat: el.lat,
+          lon: el.lon,
+          tags: el.tags || {},
+        }));
+
+        setStops(parsed);
+      } catch (e: any) {
+        setError(e.message || "Failed to load stops");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStops();
+  }, []);
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#fff" }}
@@ -36,7 +102,7 @@ export default function TransportScreen() {
           Metro & Bus Connected ✅
         </Text>
         <Text style={{ color: "#fff", marginTop: 6 }}>
-          Real-time schedules available for Lisbon, Porto & Algarve
+          Nearby stops and basic schedule info
         </Text>
       </View>
 
@@ -71,37 +137,68 @@ export default function TransportScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Routes */}
+      {/* Nearby Stops */}
       <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>
-        Popular Routes
+        Nearby Stops
       </Text>
 
-      {[
-        { from: "Lisbon Airport", to: "Baixa-Chiado", time: "12 min" },
-        { from: "Porto Campanhã", to: "Ribeira", time: "15 min" },
-        { from: "Faro Central", to: "Marina Beach", time: "9 min" },
-      ].map((r, i) => (
-        <View
-          key={i}
-          style={{
-            backgroundColor: "#f5f5f5",
-            borderRadius: 10,
-            padding: 15,
-            marginBottom: 8,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <View>
-            <Text style={{ color: "#333", fontWeight: "500" }}>
-              {r.from} → {r.to}
-            </Text>
-            <Text style={{ color: "#666", fontSize: 12 }}>{r.time}</Text>
-          </View>
-          <Ionicons name="navigate-outline" size={20} color="#009688" />
+      {loading && <ActivityIndicator size="large" color="#009688" />}
+      {error && (
+        <View style={{ marginTop: 10 }}>
+          <Text style={{ color: "red" }}>Error: {error}</Text>
         </View>
-      ))}
+      )}
+
+      {!loading && !error && (
+        <>
+          <FlatList
+            data={
+              showAll ? stops.slice(0, MAX_VISIBLE) : stops.slice(0, 10)
+            }
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: 10,
+                  padding: 12,
+                  marginBottom: 8,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#333", fontWeight: "500" }}>{item.name}</Text>
+                  <Text style={{ color: "#666", fontSize: 12 }}>
+                    {item.lat.toFixed(4)}, {item.lon.toFixed(4)}
+                  </Text>
+                </View>
+                <Ionicons name="navigate-outline" size={20} color="#009688" />
+              </View>
+            )}
+          />
+
+          {stops.length > 10 && (
+            <TouchableOpacity
+              onPress={() => setShowAll((s) => !s)}
+              style={{
+                backgroundColor: "transparent",
+                borderRadius: 8,
+                paddingVertical: 10,
+                alignItems: "center",
+                marginTop: 6,
+              }}
+            >
+              <Text style={{ color: "#009688", fontWeight: "600" }}>
+                {showAll
+                  ? "Show Less"
+                  : `View More (${Math.min(stops.length - 10, MAX_VISIBLE - 10)} more)`}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </>
+      )}
 
       {/* CTA */}
       <TouchableOpacity

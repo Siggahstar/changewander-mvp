@@ -1,8 +1,13 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useWallet } from "../contexts/WalletContext";
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const { transactions } = useWallet();
+  const { balance } = useWallet();
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#fff" }}
@@ -65,6 +70,7 @@ export default function HomeScreen() {
         }}
       >
         <TouchableOpacity
+          onPress={() => router.push("/wallet")}
           style={{
             flexBasis: "47%",
             backgroundColor: "#e0f2f1",
@@ -76,10 +82,11 @@ export default function HomeScreen() {
           <Text style={{ color: "#009688", fontSize: 16, fontWeight: "600" }}>
             Digital Wallet
           </Text>
-          <Text style={{ color: "#444", fontSize: 12 }}>€693.09 available</Text>
+          <Text style={{ color: "#444", fontSize: 12 }}>€{balance.toFixed(2)} available</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
+          onPress={() => router.push("/transport")}
           style={{
             flexBasis: "47%",
             backgroundColor: "#e0f2f1",
@@ -97,6 +104,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          onPress={() => router.push("/ar-guide")}
           style={{
             flexBasis: "47%",
             backgroundColor: "#e0f2f1",
@@ -118,31 +126,28 @@ export default function HomeScreen() {
           Recent Activity
         </Text>
 
-        <View
-          style={{
-            backgroundColor: "#f5f5f5",
-            borderRadius: 10,
-            padding: 15,
-            marginBottom: 8,
-          }}
-        >
-          <Text style={{ color: "#333" }}>Lisbon Café Payment</Text>
-          <Text style={{ color: "red", marginTop: 2 }}>-€4.50</Text>
-        </View>
-
-        <View
-          style={{
-            backgroundColor: "#f5f5f5",
-            borderRadius: 10,
-            padding: 15,
-            marginBottom: 8,
-          }}
-        >
-          <Text style={{ color: "#333" }}>Porto Tour Ticket</Text>
-          <Text style={{ color: "red", marginTop: 2 }}>-€18.00</Text>
-        </View>
+        <FlatList
+          data={transactions.slice(0, 10)}
+          keyExtractor={(t) => t.id}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: 10,
+                padding: 15,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={{ color: "#333" }}>{item.title}</Text>
+              <Text style={{ color: item.type === "in" ? "#009688" : "red", marginTop: 2 }}>
+                {item.type === "in" ? `+€${item.amount.toFixed(2)}` : `-€${Math.abs(item.amount).toFixed(2)}`}
+              </Text>
+            </View>
+          )}
+        />
 
         <TouchableOpacity
+          onPress={() => alert(`Showing up to 50 transactions`)}
           style={{
             backgroundColor: "#009688",
             borderRadius: 10,
